@@ -331,15 +331,24 @@ async def run(session_id, token, nickname):
                     print(f"\n🧑‍⚕️ 真人咨询师 {e.get('nickname','')} 接入！")
                     print("你 > ", end="", flush=True)
 
+                elif t == "session_closed":
+                    print(f"\n🔒 会话已关闭，咨询结束。感谢你的倾诉。")
+                    return
+
         async def send():
             await ready.wait()
             loop = asyncio.get_event_loop()
+            print("   close → 关闭整个会话 | q → 仅断开\n")
             while True:
                 print("你 > ", end="", flush=True)
                 line = await loop.run_in_executor(None, sys.stdin.readline)
                 s = line.strip()
                 if s.lower() in ("q", "quit", "exit"):
                     await ws.close(); return
+                if s.lower() == "close":
+                    await ws.send(json.dumps({"type": "close"}))
+                    print("🔒 已发送关闭信号...")
+                    return
                 if s:
                     await ws.send(json.dumps({"content": s}))
 
